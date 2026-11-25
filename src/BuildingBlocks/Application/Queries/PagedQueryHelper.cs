@@ -1,4 +1,6 @@
-﻿namespace CompanyName.MyMeetings.BuildingBlocks.Application.Queries
+using System;
+
+namespace CompanyName.MyMeetings.BuildingBlocks.Application.Queries
 {
     public static class PagedQueryHelper
     {
@@ -8,6 +10,21 @@
 
         public static PageData GetPageData(IPagedQuery query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            if (query.Page.HasValue && query.Page.Value < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(query.Page), "Page must be positive.");
+            }
+
+            if (query.PerPage.HasValue && query.PerPage.Value < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(query.PerPage), "Page size must be positive.");
+            }
+
             int offset;
             if (!query.Page.HasValue ||
                 !query.PerPage.HasValue)
@@ -16,7 +33,7 @@
             }
             else
             {
-                offset = (query.Page.Value - 1) * query.PerPage.Value;
+                offset = checked((query.Page.Value - 1) * query.PerPage.Value);
             }
 
             int next;
